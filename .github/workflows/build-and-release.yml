@@ -176,7 +176,7 @@ jobs:
         id: release-check
         shell: bash
         run: |
-          wget --spider -o release-check.log -r https://github.com/heroku-elixir/otp-builds/archive/${{ matrix.otp }}-${{ matrix.stack }}.tar.gz
+          wget --spider -o release-check.log -r https://github.com/heroku-elixir/otp-builds/archive/${{ matrix.otp }}-${{ matrix.stack }}.tar.gz || true
           if grep -q "no broken links" release-check.log; then
             echo "::set-output name=release-exists::true"
           else
