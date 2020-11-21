@@ -215,6 +215,7 @@ jobs:
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-${{ matrix.otp }} ${{ matrix.stack }} ./configure --with-ssl --enable-dirty-schedulers
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-${{ matrix.otp }} ${{ matrix.stack }} make
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-${{ matrix.otp }} ${{ matrix.stack }} make release
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-${{ matrix.otp }} ${{ matrix.stack }} chmod -R 777 release
 
       - name: Create Tarball
         if: ${{ steps.release-check.outputs.release-exists == 'false' }}
