@@ -46,6 +46,7 @@ jobs:
           - '23.1.2'
           - '23.1.1'
           - '23.1'
+          - '20.3.8.8'
 
     steps:
       - name: Release Check
