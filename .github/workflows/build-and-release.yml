@@ -174,24 +174,21 @@ jobs:
     steps:
       - name: Release Check
         id: release-check
-        outputs:
-          exists:
-            description: 'A boolean, true if the release already exists'
         shell: bash
         run: |
           wget --spider -o release-check.log -r https://github.com/heroku-elixir/otp-builds/archive/${{ matrix.otp }}-${{ matrix.stack }}.tar.gz
           if grep -q "no broken links" release-check.log; then
-            echo "::set-output name=exists::true"
+            echo "::set-output name=release-exists::true"
           else
-            echo "::set-output name=exists::false"
+            echo "::set-output name=release-exists::false"
           fi
 
       - name: Checkout
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         uses: actions/checkout@v2
 
       - name: Setup Erlang Build
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         run: |
           mkdir -p build/mount
           cd build
@@ -200,18 +197,18 @@ jobs:
           mv otp-OTP-${{ matrix.otp }}/ mount/
 
       - name: Docker Caching
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         uses: satackey/action-docker-layer-caching@v0.0.8
         continue-on-error: true
         with:
           key: ${{ matrix.stack }}
 
       - name: Build Heroku Stack Image
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         run: docker build -t ${{ matrix.stack }} - < stacks/${{ matrix.stack }}.Dockerfile
 
       - name: Build Erlang
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         working-directory: build
         run: |
           docker run -it -v $(pwd)/mount:/build -w /build/otp-OTP-${{ matrix.otp }} ${{ matrix.stack }} ./otp_build autoconf
@@ -220,7 +217,7 @@ jobs:
           docker run -it -v $(pwd)/mount:/build -w /build/otp-OTP-${{ matrix.otp }} ${{ matrix.stack }} make release
 
       - name: Create Tarball
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         working-directory: build
         run: |
           mkdir out
@@ -228,7 +225,7 @@ jobs:
           tar -zcf out/OTP-${{ matrix.otp }}.tar.gz OTP-${{ matrix.otp }}
 
       - name: Create Release
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         id: create-release
         uses: actions/create-release@v1
         env:
@@ -241,7 +238,7 @@ jobs:
           prerelease: false
 
       - name: Upload Release Assets
-        if: ${{ steps.release-check.outputs.exists == 'false' }}
+        if: ${{ steps.release-check.outputs.release-exists == 'false' }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
