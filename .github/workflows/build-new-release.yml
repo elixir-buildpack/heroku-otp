@@ -24,7 +24,7 @@ jobs:
         uses: satackey/action-docker-layer-caching@v0.0.8
         continue-on-error: true
         with:
-          key: heorku-${{ matrix.stack }}
+          key: heroku-${{ matrix.stack }}
 
       - name: Pull Heroku Stack Build Image
         run: docker pull heroku/heroku:${{ matrix.stack }}-build
