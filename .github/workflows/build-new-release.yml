@@ -29,9 +29,42 @@ jobs:
       - name: Pull Heroku Stack Build Image
         run: docker build -t heroku-${{ matrix.stack }} - < stacks/heroku-${{ matrix.stack }}.Dockerfile
 
+  download-otp:
+    name: Download OTP Source
+    steps:
+      - name: Get OTP Version
+        id: otp-version
+        run: |
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Download OTP Source
+        run: wget https://github.com/erlang/otp/archive/OTP-${{ steps.otp-version.outputs.version }}.tar.gz
+
+      - name: Save OTP Source
+        uses: actions/upload-artifact@v2
+        with:
+          name: otp-source
+          path: OTP-${{ steps.otp-version.outputs.version }}.tar.gz
+
+      - name: Update Release
+        id: update_release
+        uses: tubone24/update_release@v1.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          upload_url: ${{ steps.update_release.outputs.upload_url }}
+          asset_path: OTP-${{ steps.otp-version.outputs.version }}.tar.gz
+          asset_name: OTP-${{ steps.otp-version.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
   build:
     name: Build OTP for Heroku ${{ matrix.stack }}
-    needs: cache-docker-images
+    needs: [cache-docker-images, download-otp]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -42,20 +75,25 @@ jobs:
           - 20
 
     steps:
-      - name: get version
+      - uses: actions/checkout@v1
+
+      - name: Get OTP Version
         id: otp-version
         run: |
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
 
-      - uses: actions/checkout@v1
+      - name: Get OTP Source
+        uses: actions/download-artifact@v2
+        with:
+          name: otp-source
 
       - name: Setup OTP Build
         env:
           OTP: ${{ steps.otp-version.outputs.version }}
         run: |
           mkdir -p build/mount
+          mv OTP-$OTP.tar.gz build/
           cd build
-          wget https://github.com/erlang/otp/archive/OTP-$OTP.tar.gz
           tar -zxf OTP-$OTP.tar.gz
           mv otp-OTP-$OTP/ mount/
 
