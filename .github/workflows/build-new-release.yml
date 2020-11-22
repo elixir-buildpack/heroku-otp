@@ -31,6 +31,8 @@ jobs:
 
   download-otp:
     name: Download OTP Source
+    runs-on: ubuntu-latest
+
     steps:
       - name: Get OTP Version
         id: otp-version
