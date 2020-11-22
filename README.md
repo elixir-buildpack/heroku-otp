@@ -1,6 +1,6 @@
 # Erlang OTP For Heroku ![Build New OTP Release](https://github.com/heroku-elixir/otp-builds/workflows/Build%20New%20OTP%20Release/badge.svg)
 
-The [Heroku Elixir Buildpack](http://github.com/heroku-elixir/buildpack) uses
+The [Heroku Elixir Buildpack](http://github.com/elixir-buildpack/heroku-buildpack) uses
 pre-compiled builds of Erlang OTP for fast deployments. The binaries it uses are
 built and stored in this repository. Erlang is compiled in a GitHub action that
 uses the official Heroku Docker images to ensure maximum compatability. After a
