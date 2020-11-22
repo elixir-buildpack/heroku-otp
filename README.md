@@ -1,4 +1,4 @@
-# Erlang OTP For Heroku ![Build Erlang OTP For Heroku](https://github.com/heroku-elixir/otp-builds/workflows/Build%20Erlang%20OTP%20For%20Heroku/badge.svg)
+# Erlang OTP For Heroku ![Build New OTP Release](https://github.com/heroku-elixir/otp-builds/workflows/Build%20New%20OTP%20Release/badge.svg)
 
 The [Heroku Elixir Buildpack](http://github.com/heroku-elixir/buildpack) uses
 pre-compiled builds of Erlang OTP for fast deployments. The binaries it uses are
@@ -9,7 +9,7 @@ given version of Erlang is compiled, it is saved as a GitHub release asset.
 ## Adding New Versions of Erlang
 
 Just add the new version to the
-[`.github/workflows/build-and-release.yml`](.github/workflows/build-and-release.yml)
+[`.github/workflows/build-new-release.yml`](.github/workflows/build-new-release.yml)
 file. Don't worry about adding an old release, or multiple versions, missing builds
 are automatically backfilled.
 
@@ -17,7 +17,7 @@ are automatically backfilled.
 
 1. Create a `heroku-xx.Dockerfile` in the `stacks` directory.
 2. Add the new version to the
-   [`.github/workflows/build-and-release.yml`](.github/workflows/build-and-release.yml)
+   [`.github/workflows/build-new-release.yml`](.github/workflows/build-new-release.yml)
    file.
 
 ## Standing on The Shoulders of Giants

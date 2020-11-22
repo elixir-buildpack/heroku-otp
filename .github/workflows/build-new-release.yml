@@ -1,0 +1,105 @@
+name: Build New OTP Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  cache-docker-images:
+    name: Cache Stacks
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        stack:
+          - 16
+          - 18
+          - 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker Caching
+        uses: satackey/action-docker-layer-caching@v0.0.8
+        continue-on-error: true
+        with:
+          key: heorku-${{ matrix.stack }}
+
+      - name: Pull Heroku Stack Build Image
+        run: docker pull heroku/heroku:${{ matrix.stack }}-build
+
+  build:
+    name: Build OTP for Heroku ${{ matrix.stack }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack:
+          - 16
+          - 18
+          - 20
+
+    steps:
+      - name: get version
+        id: otp-version
+        run: |
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
+      - uses: actions/checkout@v1
+
+      - name: Setup OTP Build
+        env:
+          OTP: ${{ steps.otp-version.outputs.version }}
+        run: |
+          mkdir -p build/mount
+          cd build
+          wget https://github.com/erlang/otp/archive/OTP-$OTP.tar.gz
+          tar -zxf OTP-$OTP.tar.gz
+          mv otp-OTP-$OTP/ mount/
+
+      - name: Docker Caching
+        uses: satackey/action-docker-layer-caching@v0.0.8
+        continue-on-error: true
+        with:
+          key: heroku-${{ matrix.stack }}
+
+      - name: Pull Heroku Stack Build Image
+        run: docker pull heroku/heroku:${{ matrix.stack }}-build
+
+      - name: Build OTP
+        working-directory: build
+        env:
+          OTP: ${{ steps.otp-version.outputs.version }}
+          STACK: ${{ matrix.stack }}
+        run: |
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build ./otp_build autoconf
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build ./configure --with-ssl --enable-dirty-schedulers
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build make
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build make release
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build chmod -R 777 release
+
+      - name: Create Tarball
+        working-directory: build
+        env:
+          OTP: ${{ steps.otp-version.outputs.version }}
+        run: |
+          mkdir out
+          mv mount/otp-OTP-$OTP/release/x86_64-unknown-linux-gnu/ OTP-$OTP
+          tar -zcf out/OTP-$OTP.tar.gz OTP-$OTP
+
+      - name: Update Release
+        id: update_release
+        uses: tubone24/update_release@v1.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          upload_url: ${{ steps.update_release.outputs.upload_url }}
+          asset_path: build/out/OTP-${{ steps.otp-version.outputs.version }}.tar.gz
+          asset_name: heroku-${{ matrix.stack }}.tar.gz
+          asset_content_type: application/gzip
