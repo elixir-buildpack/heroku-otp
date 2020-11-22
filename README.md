@@ -8,17 +8,15 @@ given version of Erlang is compiled, it is saved as a GitHub release asset.
 
 ## Adding New Versions of Erlang
 
-Just add the new version to the
-[`.github/workflows/build-new-release.yml`](.github/workflows/build-new-release.yml)
-file. Don't worry about adding an old release, or multiple versions, missing builds
-are automatically backfilled.
+A maintainer of the project just needs to make a new release with the tag name matching the
+OTP version to be released. eg. `24.0`
 
 ## Adding New Heroku stacks
 
 1. Create a `heroku-xx.Dockerfile` in the `stacks` directory.
 2. Add the new version to the
    [`.github/workflows/build-new-release.yml`](.github/workflows/build-new-release.yml)
-   file.
+   file in the `cache-docker-images` and `build` jobs.
 
 ## Standing on The Shoulders of Giants
 
