@@ -27,7 +27,7 @@ jobs:
           key: heroku-${{ matrix.stack }}
 
       - name: Pull Heroku Stack Build Image
-        run: docker pull heroku/heroku:${{ matrix.stack }}-build
+        run: docker build -t heroku-${{ matrix.stack }} - < stacks/heroku-${{ matrix.stack }}.Dockerfile
 
   build:
     name: Build OTP for Heroku ${{ matrix.stack }}
@@ -66,7 +66,9 @@ jobs:
           key: heroku-${{ matrix.stack }}
 
       - name: Pull Heroku Stack Build Image
-        run: docker pull heroku/heroku:${{ matrix.stack }}-build
+        env:
+          STACK: ${{ matrix.stack }}
+        run: docker build -t heroku-$STACK - < stacks/heroku-$STACK.Dockerfile
 
       - name: Build OTP
         working-directory: build
@@ -74,11 +76,11 @@ jobs:
           OTP: ${{ steps.otp-version.outputs.version }}
           STACK: ${{ matrix.stack }}
         run: |
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build ./otp_build autoconf
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build ./configure --with-ssl --enable-dirty-schedulers
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build make
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build make release
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku/heroku:$STACK-build chmod -R 777 release
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK ./otp_build autoconf
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK ./configure --with-ssl --enable-dirty-schedulers
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK make
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK make release
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK chmod -R 777 release
 
       - name: Create Tarball
         working-directory: build
