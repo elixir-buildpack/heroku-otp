@@ -26,7 +26,7 @@ jobs:
         with:
           key: heroku-${{ matrix.stack }}
 
-      - name: Pull Heroku Stack Build Image
+      - name: Build Heroku Stack Image
         run: docker build -t heroku-${{ matrix.stack }} - < stacks/heroku-${{ matrix.stack }}.Dockerfile
 
   download-otp:
@@ -105,7 +105,7 @@ jobs:
         with:
           key: heroku-${{ matrix.stack }}
 
-      - name: Pull Heroku Stack Build Image
+      - name: Build Heroku Stack Image
         env:
           STACK: ${{ matrix.stack }}
         run: docker build -t heroku-$STACK - < stacks/heroku-$STACK.Dockerfile
