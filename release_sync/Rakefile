@@ -30,7 +30,7 @@ task :sync_releases do
 
     if authenticated
       client.create_release(
-        build_repo,
+        'elixir-buildpack/heroku-otp',
         release_version,
         {
           name: release_name,
