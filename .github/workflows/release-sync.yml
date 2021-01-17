@@ -31,4 +31,4 @@ jobs:
         working-directory: release_sync
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
-        run: rake sync_releases
+        run: bundle exec rake sync_releases
