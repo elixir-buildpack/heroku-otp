@@ -8,8 +8,8 @@ given version of Erlang is compiled, it is saved as a GitHub release asset.
 
 ## Adding New Versions of Erlang
 
-A maintainer of the project just needs to make a new release with the tag name matching the
-OTP version to be released. eg. `24.0`
+This repo has a workflow that should run every 20 minutes that builds any new OTP releases.
+The code in `release_sync/Rakefile` handles the sync interactions with the GitHub API.
 
 ## Adding New Heroku stacks
 
