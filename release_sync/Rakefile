@@ -29,6 +29,7 @@ task :sync_releases do
     release_version = release_name.split(' ').last
 
     if authenticated
+      puts "Creating #{release_name}"
       client.create_release(
         'elixir-buildpack/heroku-otp',
         release_version,
