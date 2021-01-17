@@ -1,0 +1,46 @@
+task default: :sync_releases
+require 'octokit'
+
+desc 'Sync local releases with Erlang OTP releases'
+task :sync_releases do
+  authenticated = !ENV['GITHUB_TOKEN'].nil?
+  client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
+
+  otp_repo = client.repo 'erlang/otp'
+  otp_release_link = otp_repo.rels[:releases]
+  otp_releases = otp_release_link.get(query: {per_page: 70, page: 0}).data
+
+  build_repo = client.repo 'elixir-buildpack/heroku-otp'
+  build_release_link = build_repo.rels[:releases]
+  build_releases = build_release_link.get(query: {per_page: 100, page: 0}).data
+
+  missing_releases = otp_releases.map{|rel| rel[:name] } - build_releases.map{|rel| rel[:name] }
+  missing_releases.reject!{|rel| rel =~ /rc/ }
+
+  if missing_releases.size == 0
+    puts 'No missing releases.'
+    next
+  end
+
+  puts "#{missing_releases.size} missing release(s)"
+
+  missing_releases.sort.each_with_index do |release_name, index|
+    next if index > 5
+    release_version = release_name.split(' ').last
+
+    if authenticated
+      client.create_release(
+        build_repo,
+        release_version,
+        {
+          name: release_name,
+          body: "#{release_name} build for Heroku.",
+          prerelease: false,
+          draft: false
+        }
+      )
+    else
+      puts "Skipping #{release_name}"
+    end
+  end
+end
