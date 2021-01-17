@@ -6,16 +6,11 @@ task :sync_releases do
   authenticated = !ENV['GITHUB_TOKEN'].nil?
   client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
 
-  otp_repo = client.repo 'erlang/otp'
-  otp_release_link = otp_repo.rels[:releases]
-  otp_releases = otp_release_link.get(query: {per_page: 70, page: 0}).data
+  otp_releases = get_all_releases(client, 'erlang/otp')
+  build_releases = get_all_releases(client, 'elixir-buildpack/heroku-otp')
 
-  build_repo = client.repo 'elixir-buildpack/heroku-otp'
-  build_release_link = build_repo.rels[:releases]
-  build_releases = build_release_link.get(query: {per_page: 100, page: 0}).data
-
-  missing_releases = otp_releases.map{|rel| rel[:name] } - build_releases.map{|rel| rel[:name] }
-  missing_releases.reject!{|rel| rel =~ /rc/ }
+  missing_releases = otp_releases - build_releases
+  missing_releases.select!{|rel| rel =~ /\AOTP (?<version>(\d{1,}\.){1,}\d{1,})\z/ }
 
   if missing_releases.size == 0
     puts 'No missing releases.'
@@ -44,4 +39,18 @@ task :sync_releases do
       puts "Skipping #{release_name}"
     end
   end
+end
+
+def get_all_releases(client, repo)
+  gh_repo = client.repo repo
+  gh_release_link = gh_repo.rels[:releases]
+  last_release_page = gh_release_link.get(query: {per_page: 100, page: 0})
+  releases = last_release_page.data.map{|rel| rel[:name] }
+
+  until last_release_page.rels[:next].nil?
+    last_release_page = last_release_page.rels[:next].get
+    releases += last_release_page.data.map{|rel| rel[:name] }
+  end
+
+  releases
 end
