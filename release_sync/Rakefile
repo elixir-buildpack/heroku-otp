@@ -1,13 +1,17 @@
 task default: :sync_releases
 require 'octokit'
+require_relative 'ghapi'
 
 desc 'Sync local releases with Erlang OTP releases'
 task :sync_releases do
   authenticated = !ENV['GITHUB_TOKEN'].nil?
   client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
 
-  otp_releases = get_all_releases(client, 'erlang/otp')
-  build_releases = get_all_releases(client, 'elixir-buildpack/heroku-otp')
+  otp_releases = get_all_releases('erlang/otp')
+  puts "otp release count: #{otp_releases.size}"
+
+  build_releases = get_all_releases('elixir-buildpack/heroku-otp')
+  puts "build release count: #{build_releases.size}"
 
   missing_releases = otp_releases - build_releases
   missing_releases.select!{|rel| rel =~ /\AOTP (?<version>(\d{1,}\.){1,}\d{1,})\z/ }
@@ -41,15 +45,32 @@ task :sync_releases do
   end
 end
 
-def get_all_releases(client, repo)
-  gh_repo = client.repo repo
-  gh_release_link = gh_repo.rels[:releases]
-  last_release_page = gh_release_link.get(query: {per_page: 100, page: 0})
-  releases = last_release_page.data.map{|rel| rel[:name] }
+def get_all_releases(repo)
+  repo_owner = repo.split('/').first
+  repo_name = repo.split('/').last
+  last_result = GHAPI::Client.query(
+    GHAPI::GetReleases,
+    variables: {
+      repo_owner: repo_owner,
+      repo_name: repo_name
+    }
+  )
 
-  until last_release_page.rels[:next].nil?
-    last_release_page = last_release_page.rels[:next].get
-    releases += last_release_page.data.map{|rel| rel[:name] }
+  release_count = last_result.data.repository.releases.total_count
+  releases = last_result.data.repository.releases.nodes.map(&:name)
+
+  until release_count <= releases.size
+    last_result = GHAPI::Client.query(
+      GHAPI::GetReleases,
+      variables: {
+        repo_owner: repo_owner,
+        repo_name: repo_name,
+        after: last_result.data.repository.releases.edges.map(&:cursor).last
+      }
+    )
+
+    releases += last_result.data.repository.releases.nodes.map(&:name)
+    releases = releases.uniq
   end
 
   releases
