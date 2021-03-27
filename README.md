@@ -1,4 +1,4 @@
-# Erlang OTP For Heroku ![Sync OTP Releases](https://github.com/elixir-buildpack/heroku-otp/workflows/Sync%20OTP%20Releases/badge.svg) ![Build New OTP Release](https://github.com/heroku-elixir/otp-builds/workflows/Build%20New%20OTP%20Release/badge.svg)
+# Erlang OTP For Heroku [![Sync OTP Releases](https://github.com/elixir-buildpack/heroku-otp/workflows/Sync%20OTP%20Releases/badge.svg)](https://github.com/elixir-buildpack/heroku-otp/actions/workflows/release-sync.yml) [![Build New OTP Release](https://github.com/heroku-elixir/otp-builds/workflows/Build%20New%20OTP%20Release/badge.svg)](https://github.com/elixir-buildpack/heroku-otp/actions/workflows/build-new-release.yml)
 
 The [Heroku Elixir Buildpack](http://github.com/elixir-buildpack/heroku-buildpack) uses
 pre-compiled builds of Erlang OTP for fast deployments. The binaries it uses are
