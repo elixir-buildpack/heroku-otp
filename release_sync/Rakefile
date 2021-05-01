@@ -7,11 +7,13 @@ task :sync_releases do
   authenticated = !ENV['GITHUB_TOKEN'].nil?
   client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
 
+  puts 'Getting OTP releases...'
   otp_releases = get_all_releases('erlang/otp')
-  puts "otp release count: #{otp_releases.size}"
+  puts "OTP release count: #{otp_releases.size}"
 
+  puts 'Getting buildpack OTP releases...'
   build_releases = get_all_releases('elixir-buildpack/heroku-otp')
-  puts "build release count: #{build_releases.size}"
+  puts "Buildpack OTP release count: #{build_releases.size}"
 
   missing_releases = otp_releases - build_releases
   missing_releases.select!{|rel| rel =~ /\AOTP (?<version>(\d{1,}\.){1,}\d{1,})\z/ }
