@@ -60,19 +60,21 @@ def get_all_releases(repo)
 
   release_count = last_result.data.repository.releases.total_count
   releases = last_result.data.repository.releases.nodes.map(&:name)
+  last_cursor = last_result.data.repository.releases.edges.map(&:cursor).last
 
-  until release_count <= releases.size
+  until last_cursor.nil?
     last_result = GHAPI::Client.query(
       GHAPI::GetReleases,
       variables: {
         repo_owner: repo_owner,
         repo_name: repo_name,
-        after: last_result.data.repository.releases.edges.map(&:cursor).last
+        after: last_cursor
       }
     )
 
     releases += last_result.data.repository.releases.nodes.map(&:name)
     releases = releases.uniq
+    last_cursor = last_result.data.repository.releases.edges.map(&:cursor).last
   end
 
   releases
