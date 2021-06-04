@@ -93,7 +93,7 @@ jobs:
         env:
           OTP: ${{ steps.otp-version.outputs.version }}
         run: |
-          mkdir -p build/mount
+          mkdir -p build/mount/otp-release-files
           mv OTP-$OTP.tar.gz build/
           cd build
           tar -zxf OTP-$OTP.tar.gz
@@ -119,7 +119,7 @@ jobs:
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK ./otp_build autoconf
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK ./configure --with-ssl --enable-dirty-schedulers
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK make
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK make release
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP --env RELEASE_ROOT=/build/otp-release-files heroku-$STACK make release
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK chmod -R 777 release
 
       - name: Create Tarball
@@ -128,7 +128,7 @@ jobs:
           OTP: ${{ steps.otp-version.outputs.version }}
         run: |
           mkdir out
-          mv mount/otp-OTP-$OTP/release/x86_64-unknown-linux-gnu/ OTP-$OTP
+          mv mount/otp-release-files/ OTP-$OTP
           tar -zcf out/OTP-$OTP.tar.gz OTP-$OTP
 
       - name: Update Release
