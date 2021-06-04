@@ -119,7 +119,7 @@ jobs:
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK ./otp_build autoconf
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK ./configure --with-ssl --enable-dirty-schedulers
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK make
-          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP --env RELEASE_ROOT=/build/otp-release-files heroku-$STACK make release
+          docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK make RELEASE_ROOT=/build/otp-release-files release
           docker run -v $(pwd)/mount:/build -w /build/otp-OTP-$OTP heroku-$STACK chmod -R 777 release
 
       - name: Create Tarball
