@@ -76,5 +76,5 @@ def get_all_releases(repo)
     last_cursor = last_result.data.repository.releases.edges.map(&:cursor).last
   end
 
-  releases.uniq
+  releases.uniq.sort
 end
