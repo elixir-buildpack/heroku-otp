@@ -8,7 +8,9 @@ task :sync_releases do
   client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
 
   puts 'Getting OTP releases...'
-  otp_releases = get_all_releases('erlang/otp')
+  otp_releases = get_all_releases('erlang/otp').
+                 select{ |tag| tag =~ /\AOTP-(?<version>(\d{1,}\.){1,}\d{1,})\z/ }.
+                 map{ |tag| tag.sub('OTP-', '') }
   puts "OTP release count: #{otp_releases.size}"
 
   puts 'Getting buildpack OTP releases...'
@@ -16,7 +18,6 @@ task :sync_releases do
   puts "Buildpack OTP release count: #{build_releases.size}"
 
   missing_releases = otp_releases - build_releases
-  missing_releases.select!{|rel| rel =~ /\AOTP (?<version>(\d{1,}\.){1,}\d{1,})\z/ }
 
   if missing_releases.size == 0
     puts 'No missing releases.'
@@ -25,9 +26,9 @@ task :sync_releases do
 
   puts "#{missing_releases.size} missing release(s)"
 
-  missing_releases.sort.each_with_index do |release_name, index|
+  missing_releases.sort.each_with_index do |release_version, index|
     next if index > 5
-    release_version = release_name.split(' ').last
+    release_name = "OTP #{release_version}"
 
     if authenticated
       puts "Creating #{release_name}"
@@ -59,7 +60,7 @@ def get_all_releases(repo)
   )
 
   release_count = last_result.data.repository.releases.total_count
-  releases = last_result.data.repository.releases.nodes.map(&:name)
+  releases = last_result.data.repository.releases.nodes.map{ |rel| rel.tag.name }
   last_cursor = last_result.data.repository.releases.edges.map(&:cursor).last
 
   until last_cursor.nil?
@@ -72,7 +73,7 @@ def get_all_releases(repo)
       }
     )
 
-    releases += last_result.data.repository.releases.nodes.map(&:name)
+    releases += last_result.data.repository.releases.nodes.map{ |rel| rel.tag.name }
     last_cursor = last_result.data.repository.releases.edges.map(&:cursor).last
   end
 

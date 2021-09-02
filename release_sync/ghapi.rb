@@ -20,7 +20,9 @@ module GHAPI
         releases(orderBy: {field: NAME, direction: DESC}, first: 100, after: $after) {
           totalCount
           nodes {
-            name
+            tag {
+              name
+            }
           }
           edges {
             cursor
