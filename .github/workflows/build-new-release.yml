@@ -71,7 +71,6 @@ jobs:
       fail-fast: false
       matrix:
         stack:
-          - 16
           - 18
           - 20
 
