@@ -8,24 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Install Ruby
-        uses: eregon/use-ruby-action@master
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2.2
-
-      - name: Cache gems
-        uses: actions/cache@v2
-        with:
-          path: release_sync/vendor/bundle
-          key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-release-sync-gems-${{ hashFiles('release_sync/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-release-sync-gems-
-
-      - name: Install gems
-        working-directory: release_sync
-        run: bundle install --path vendor/bundle --jobs 4 --retry 3
+          working-directory: release_sync
+          bundler-cache: true
 
       - name: Sync Releases
         working-directory: release_sync

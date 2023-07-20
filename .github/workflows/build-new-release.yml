@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Docker Caching
-        uses: satackey/action-docker-layer-caching@v0.0.8
+        uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
         with:
           key: heroku-${{ matrix.stack }}
@@ -42,7 +42,7 @@ jobs:
         run: wget https://github.com/erlang/otp/archive/OTP-${{ steps.otp-version.outputs.version }}.tar.gz
 
       - name: Save OTP Source
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: otp-source
           path: OTP-${{ steps.otp-version.outputs.version }}.tar.gz
@@ -75,7 +75,7 @@ jobs:
           - 20
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get OTP Version
         id: otp-version
@@ -83,7 +83,7 @@ jobs:
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
 
       - name: Get OTP Source
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: otp-source
 
@@ -98,7 +98,7 @@ jobs:
           mv otp-OTP-$OTP/ mount/
 
       - name: Docker Caching
-        uses: satackey/action-docker-layer-caching@v0.0.8
+        uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
         with:
           key: heroku-${{ matrix.stack }}
