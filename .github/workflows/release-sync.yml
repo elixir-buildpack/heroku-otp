@@ -13,7 +13,7 @@ jobs:
       - name: Install Ruby
         uses: eregon/use-ruby-action@master
         with:
-          ruby-version: 2.7.2
+          ruby-version: 3.2.2
 
       - name: Cache gems
         uses: actions/cache@v2
