@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         stack:
-          - 18
           - 20
+          - 22
 
     steps:
       - name: Checkout
@@ -71,8 +71,8 @@ jobs:
       fail-fast: false
       matrix:
         stack:
-          - 18
           - 20
+          - 22
 
     steps:
       - uses: actions/checkout@v3
@@ -131,7 +131,7 @@ jobs:
 
       - name: Update Release
         id: update_release
-        uses: tubone24/update_release@v1.0
+        uses: tubone24/update_release@v1.3.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

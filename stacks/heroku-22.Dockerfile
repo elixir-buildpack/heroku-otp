@@ -1,4 +1,4 @@
-FROM heroku/heroku:18
+FROM heroku/heroku:22
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
