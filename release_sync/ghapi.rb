@@ -11,7 +11,13 @@ module GHAPI
       end
     end
   end
-  Schema = GraphQL::Client.load_schema(HTTP)
+
+  Schema = if File.exist?("gh-graph.json")
+    GraphQL::Client.load_schema("gh-graph.json")
+  else
+    GraphQL::Client.load_schema(HTTP)
+  end
+
   Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
 
   GetReleases = Client.parse <<-GRAPHQL
